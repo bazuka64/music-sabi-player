@@ -220,7 +220,8 @@ class RandomPlayer:
 
         pygame.mixer.music.stop()
 
-        song = random.choice(self.songs)
+        candidates = [s for s in self.songs if s != self.current_song]
+        song = random.choice(candidates if candidates else self.songs)
         path = os.path.join(MUSIC_DIR, song)
         duration = get_duration(path)
 
