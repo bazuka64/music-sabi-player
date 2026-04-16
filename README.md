@@ -35,8 +35,6 @@ pip install pygame-ce mutagen
 python player.py
 ```
 
-Windows の場合は `起動.bat` をダブルクリックでも起動できます。
-
 ## ライセンス
 
 MIT
