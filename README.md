@@ -34,7 +34,3 @@ pip install pygame-ce mutagen
 ```bash
 python player.py
 ```
-
-## ライセンス
-
-MIT
