@@ -64,8 +64,10 @@ class RandomPlayer:
     # ── 曲リスト ──────────────────────────────────────────────────────────────
 
     def load_songs(self):
+        exts = {'.mp3', '.wav', '.wma', '.flac', '.ogg', '.m4a', '.aac'}
         self.songs = sorted(
-            [f for f in os.listdir(MUSIC_DIR) if f.lower().endswith('.mp3')]
+            [f for f in os.listdir(MUSIC_DIR)
+             if os.path.splitext(f.lower())[1] in exts]
         )
 
     # ── UI 構築 ───────────────────────────────────────────────────────────────
@@ -215,8 +217,6 @@ class RandomPlayer:
             return
         from tkinter import messagebox
         song = self.current_song
-        if not messagebox.askyesno("削除確認", f"このファイルを削除しますか？\n\n{song}"):
-            return
         self.stop()
         pygame.mixer.music.unload()
         path = os.path.join(MUSIC_DIR, song)

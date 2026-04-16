@@ -1,7 +1,10 @@
 *.mp3
 *.wav
+*.wma
 *.flac
 *.ogg
+*.m4a
+*.aac
 __pycache__/
 *.pyc
 sabi_times.json
