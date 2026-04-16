@@ -11,6 +11,8 @@ from tkinter import ttk
 import pygame
 import os
 import random
+import json
+import sys
 
 try:
     from mutagen.mp3 import MP3
@@ -23,7 +25,22 @@ except ImportError:
     def get_duration(path):
         return 240.0
 
-MUSIC_DIR = os.path.dirname(os.path.abspath(__file__))
+MUSIC_DIR   = os.path.dirname(os.path.abspath(__file__))
+CONFIG_PATH = os.path.join(MUSIC_DIR, 'config.json')
+
+def load_config():
+    try:
+        with open(CONFIG_PATH, 'r') as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+def save_config(data):
+    try:
+        with open(CONFIG_PATH, 'w') as f:
+            json.dump(data, f)
+    except Exception:
+        pass
 
 # ── カラー ────────────────────────────────────────────────────────────────────
 BG       = '#12121f'
@@ -42,11 +59,15 @@ class RandomPlayer:
     def __init__(self, root):
         self.root = root
         self.root.title("サビプレイヤー")
-        self.root.geometry("600x420")
         self.root.resizable(False, False)
         self.root.configure(bg=BG)
 
         pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
+
+        cfg = load_config()
+        saved_secs = cfg.get('clip_secs', CLIP_SECS)
+        # 5秒刻みに丸めて範囲内に収める
+        saved_secs = max(5, min(60, round(saved_secs / 5) * 5))
 
         self.songs = []
         self.shuffle_queue = []
@@ -55,7 +76,7 @@ class RandomPlayer:
         self.current_start = 0.0
         self.song_duration = 0.0
         self.is_playing = False
-        self.clip_secs = CLIP_SECS
+        self.clip_secs = saved_secs
         self._after_id = None
 
         self.load_songs()
@@ -79,7 +100,8 @@ class RandomPlayer:
         tk.Label(self.root, text="サビプレイヤー", bg=BG, fg=ACCENT,
                  font=('Yu Gothic UI', 18, 'bold')).pack(pady=(20, 4))
 
-        tk.Label(self.root, text=f"ランダムに {CLIP_SECS} 秒再生",
+        self.subtitle_var = tk.StringVar(value=f"全曲シャッフル一周  /  {self.clip_secs} 秒再生")
+        tk.Label(self.root, textvariable=self.subtitle_var,
                  bg=BG, fg=SUBTEXT, font=('Yu Gothic UI', 10)).pack()
 
         # ─ 曲名
@@ -144,8 +166,8 @@ class RandomPlayer:
         tk.Label(sec_frame, text="再生秒数:", bg=BG, fg=SUBTEXT,
                  font=('Yu Gothic UI', 9)).pack(side=tk.LEFT)
 
-        self.sec_var = tk.IntVar(value=CLIP_SECS)
-        self.sec_label = tk.Label(sec_frame, text=f"{CLIP_SECS}秒", bg=BG, fg=YELLOW,
+        self.sec_var = tk.IntVar(value=self.clip_secs)
+        self.sec_label = tk.Label(sec_frame, text=f"{self.clip_secs}秒", bg=BG, fg=YELLOW,
                                    font=('Yu Gothic UI', 9, 'bold'), width=4)
         self.sec_label.pack(side=tk.RIGHT, padx=(4, 0))
 
@@ -165,10 +187,15 @@ class RandomPlayer:
     # ── イベント ───────────────────────────────────────────────────────────────
 
     def _on_sec_change(self, val):
-        v = int(float(val))
+        # 5秒刻みに丸める
+        v = round(float(val) / 5) * 5
+        v = max(5, min(60, v))
+        self.sec_var.set(v)
         self.clip_secs = v
         self.progress_bar.config(maximum=v)
         self.sec_label.config(text=f"{v}秒")
+        self.subtitle_var.set(f"全曲シャッフル一周  /  {v} 秒再生")
+        save_config({'clip_secs': v})
 
     def toggle_play(self):
         if self.is_playing:
@@ -319,7 +346,22 @@ def _fmt(sec):
 
 
 def main():
+    # コンソールウィンドウを非表示 (Windows)
+    if sys.platform == 'win32':
+        import ctypes
+        ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
+
     root = tk.Tk()
+
+    # 画面中央に配置
+    W, H = 600, 420
+    root.update_idletasks()
+    sw = root.winfo_screenwidth()
+    sh = root.winfo_screenheight()
+    x = (sw - W) // 2
+    y = (sh - H) // 2
+    root.geometry(f"{W}x{H}+{x}+{y}")
+
     app = RandomPlayer(root)  # noqa: F841
 
     def on_close():
