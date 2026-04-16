@@ -49,6 +49,8 @@ class RandomPlayer:
         pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
 
         self.songs = []
+        self.shuffle_queue = []
+        self.play_count = 0
         self.current_song = None
         self.current_start = 0.0
         self.song_duration = 0.0
@@ -207,7 +209,16 @@ class RandomPlayer:
         self.pos_var.set("")
         self.status_var.set(f"{len(self.songs)} 曲を認識")
 
-    # ── ランダム再生 ──────────────────────────────────────────────────────────
+    # ── シャッフル一周再生 ────────────────────────────────────────────────────
+
+    def _refill_queue(self):
+        q = self.songs[:]
+        random.shuffle(q)
+        # 一周後の先頭が直前の曲と被らないよう調整
+        if self.current_song and len(q) > 1 and q[0] == self.current_song:
+            q[0], q[1] = q[1], q[0]
+        self.shuffle_queue = q
+        self.play_count = 0
 
     def next_random(self):
         if not self.songs:
@@ -220,8 +231,11 @@ class RandomPlayer:
 
         pygame.mixer.music.stop()
 
-        candidates = [s for s in self.songs if s != self.current_song]
-        song = random.choice(candidates if candidates else self.songs)
+        if not self.shuffle_queue:
+            self._refill_queue()
+
+        song = self.shuffle_queue.pop(0)
+        self.play_count += 1
         path = os.path.join(MUSIC_DIR, song)
         duration = get_duration(path)
 
@@ -255,7 +269,10 @@ class RandomPlayer:
         self.pos_var.set(f"{_fmt(start)} 〜 {_fmt(start + self.clip_secs)}"
                          f"  /  全 {_fmt(duration)}")
         self.play_btn.config(text="⏸  一時停止")
-        self.status_var.set(f"再生中 ♪  ({len(self.songs)} 曲中からランダム)")
+        total = len(self.songs)
+        lap = (self.play_count - 1) // total + 1
+        idx = ((self.play_count - 1) % total) + 1
+        self.status_var.set(f"再生中 ♪  {idx} / {total} 曲目  (第 {lap} 周)")
 
         self._schedule_tick()
 
