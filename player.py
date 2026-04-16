@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 サビプレイヤー
-  - フォルダ内のMP3からランダムに1曲選び、ランダムな15秒を再生
-  - 15秒経過したら自動で次の曲へ
+  - フォルダ内のMP3からランダムに1曲選び、ランダムな20秒を再生
+  - 20秒経過したら自動で次の曲へ
 """
 
 import tkinter as tk
@@ -35,7 +35,7 @@ SUBTEXT  = '#7070a0'
 GREEN    = '#40c060'
 YELLOW   = '#f0c040'
 
-CLIP_SECS   = 15   # 1クリップの再生時間(秒)
+CLIP_SECS   = 20   # 1クリップの再生時間(秒)
 
 
 class RandomPlayer:
@@ -133,8 +133,6 @@ class RandomPlayer:
         btn(btn_frame, "⏭  次の曲", self.next_random,
             color=PANEL, fg=TEXT, size=11, w=10).pack(side=tk.LEFT, padx=8)
 
-        btn(btn_frame, "🗑  削除", self.delete_current,
-            color='#4a1010', fg='#ff6b6b', size=10, w=8).pack(side=tk.LEFT, padx=8)
 
         # ─ 秒数スライダー
         sec_frame = tk.Frame(self.root, bg=BG)
@@ -207,25 +205,6 @@ class RandomPlayer:
         self.song_var.set("▶ を押してスタート")
         self.pos_var.set("")
         self.status_var.set(f"{len(self.songs)} 曲を認識")
-
-    def delete_current(self):
-        if not self.current_song:
-            return
-        from tkinter import messagebox
-        song = self.current_song
-        self.stop()
-        pygame.mixer.music.unload()
-        path = os.path.join(MUSIC_DIR, song)
-        trash_dir = os.path.join(MUSIC_DIR, "trash")
-        os.makedirs(trash_dir, exist_ok=True)
-        try:
-            os.rename(path, os.path.join(trash_dir, song))
-        except Exception as e:
-            messagebox.showerror("エラー", str(e))
-            return
-        self.songs.remove(song)
-        self.status_var.set(f"trash に移動しました: {song}")
-        self.next_random()
 
     # ── ランダム再生 ──────────────────────────────────────────────────────────
 
