@@ -67,7 +67,8 @@ class RandomPlayer:
         exts = {'.mp3', '.wav', '.wma', '.flac', '.ogg', '.m4a', '.aac'}
         self.songs = sorted(
             [f for f in os.listdir(MUSIC_DIR)
-             if os.path.splitext(f.lower())[1] in exts]
+             if os.path.splitext(f.lower())[1] in exts
+             and os.path.isfile(os.path.join(MUSIC_DIR, f))]
         )
 
     # ── UI 構築 ───────────────────────────────────────────────────────────────
@@ -253,7 +254,13 @@ class RandomPlayer:
         hi = max(lo + 1, duration * (1 - SKIP_END) - self.clip_secs)
         start = random.uniform(lo, hi)
 
-        pygame.mixer.music.load(path)
+        try:
+            pygame.mixer.music.load(path)
+        except pygame.error:
+            self.songs.remove(song)
+            self.status_var.set(f"スキップ（非対応形式）: {song}")
+            self.next_random()
+            return
         pygame.mixer.music.play(start=start)
 
         self.current_song = song
