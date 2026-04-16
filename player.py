@@ -36,8 +36,6 @@ GREEN    = '#40c060'
 YELLOW   = '#f0c040'
 
 CLIP_SECS   = 15   # 1クリップの再生時間(秒)
-SKIP_START  = 0.20 # 曲頭からこの割合は避ける(イントロ)
-SKIP_END    = 0.15 # 曲末からこの割合は避ける(アウトロ)
 
 
 class RandomPlayer:
@@ -247,8 +245,8 @@ class RandomPlayer:
         duration = get_duration(path)
 
         # ランダム開始位置: 曲の 20%〜75% あたり (イントロ・アウトロを避ける)
-        lo = duration * SKIP_START
-        hi = max(lo + 1, duration * (1 - SKIP_END) - self.clip_secs)
+        lo = 0
+        hi = max(0, duration - self.clip_secs)
         start = random.uniform(lo, hi)
 
         try:
