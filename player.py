@@ -135,9 +135,6 @@ class RandomPlayer:
         btn(btn_frame, "⏭  次の曲", self.next_random,
             color=PANEL, fg=TEXT, size=11, w=10).pack(side=tk.LEFT, padx=8)
 
-        btn(btn_frame, "⏹  停止", self.stop,
-            color=DEEP, fg=SUBTEXT, size=10, w=8).pack(side=tk.LEFT, padx=8)
-
         btn(btn_frame, "🗑  削除", self.delete_current,
             color='#4a1010', fg='#ff6b6b', size=10, w=8).pack(side=tk.LEFT, padx=8)
 
