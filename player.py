@@ -58,6 +58,7 @@ class RandomPlayer:
 
         self.load_songs()
         self.build_ui()
+        self.root.after(100, self.next_random)
 
     # ── 曲リスト ──────────────────────────────────────────────────────────────
 
