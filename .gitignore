@@ -1,0 +1,7 @@
+*.mp3
+*.wav
+*.flac
+*.ogg
+__pycache__/
+*.pyc
+sabi_times.json
